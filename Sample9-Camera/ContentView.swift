@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct ContentView: View {
     @ObservedObject var camera = Camera()   // カメラ情報の初期設定
@@ -33,6 +34,12 @@ struct ContentView: View {
                 Spacer()
                 // カメラの機能をON・OFF
                 Button(action: {
+                    // カメラの向きを取得して、画面の向きを設定
+                    guard let orientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation else {
+                                return
+                            }
+                    camera.previewLayer.connection?.videoOrientation = convertUIOrientation2VideoOrientation(interface: orientation)
+                    
                     self.cameraOn.toggle()
                     if self.cameraOn {
                         self.camera.startSession()
@@ -55,6 +62,22 @@ struct ContentView: View {
                 }
                 Spacer()
             }.frame(height:50)
+        }
+    }
+    // UIInterfaceOrientation -> AVCaptureVideoOrientationにConvert
+    func convertUIOrientation2VideoOrientation(interface: UIInterfaceOrientation) -> AVCaptureVideoOrientation {
+        switch interface {
+            case UIInterfaceOrientation.portrait:
+                return AVCaptureVideoOrientation.portrait
+            case UIInterfaceOrientation.portraitUpsideDown:
+                return AVCaptureVideoOrientation.portraitUpsideDown
+            case UIInterfaceOrientation.landscapeLeft:
+                return AVCaptureVideoOrientation.landscapeLeft
+            case UIInterfaceOrientation.landscapeRight:
+                return AVCaptureVideoOrientation.landscapeRight
+            default:
+                return AVCaptureVideoOrientation.portrait
+
         }
     }
 }

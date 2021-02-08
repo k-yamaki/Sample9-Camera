@@ -19,7 +19,7 @@ class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, Observable
     ///撮影した画像
     @Published var image: UIImage?
     ///プレビュー用レイヤー
-    var previewLayer:CALayer!
+    var previewLayer:AVCaptureVideoPreviewLayer!
     ///撮影開始フラグ
     private var _takePhoto:Bool = false
     ///セッション
@@ -55,6 +55,12 @@ class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, Observable
         }
 
         let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+        // カメラの向きを教える。
+        /*
+        if let orientation = self.convertUIOrientation2VideoOrientation(f: {return self.appOrientation()}) {
+            previewLayer.connection!.videoOrientation = orientation
+        }
+ */
         self.previewLayer = previewLayer
 
         let dataOutput = AVCaptureVideoDataOutput()
@@ -113,6 +119,40 @@ class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, Observable
 
         return nil
     }
+    /*
+    func appOrientation() -> UIInterfaceOrientation {
+        return UIApplication.shared.statusBarOrientation
+    }
+    // 画面の向きをコンバート
+    func convertUIOrientation2VideoOrientation(f: () -> UIInterfaceOrientation) -> AVCaptureVideoOrientation? {
+        let v = f()
+        switch v {
+        case UIInterfaceOrientation.unknown:
+                return nil
+            default:
+                return ([
+                    UIInterfaceOrientation.portrait: AVCaptureVideoOrientation.portrait,
+                    UIInterfaceOrientation.portraitUpsideDown: AVCaptureVideoOrientation.portraitUpsideDown,
+                    UIInterfaceOrientation.landscapeLeft: AVCaptureVideoOrientation.landscapeLeft,
+                    UIInterfaceOrientation.landscapeRight: AVCaptureVideoOrientation.landscapeRight
+                ])[v]
+        }
+    }
+    //画面の回転にも対応したい時は viewWillTransitionToSize で同じく向きを教える。
+    override func viewWillTransition(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
+
+        coordinator.animate(
+            alongsideTransition: nil,
+            completion: {(UIViewControllerTransitionCoordinatorContext) in
+                //画面の回転後に向きを教える。
+                if let orientation = self.convertUIOrientation2VideoOrientation(f: {return self.appOrientation()}) {
+                    videoPreviewLayer?.connection.videoOrientation = orientation
+                }
+            }
+        )
+    }
+ */
 }
 // カメラを表示するビュー
 struct CALayerView: UIViewControllerRepresentable {
